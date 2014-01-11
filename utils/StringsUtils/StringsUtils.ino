@@ -3,18 +3,13 @@ String getString(){
         bool quit = false;
         
          if (Serial.available() > 0 ){
-           while(quit !=true){
-  
-                if(Serial.available() > 0 ){
-                  
-                  char recieved = Serial.read();
-                  if (recieved == '\n'){
-                    return inData;
-                  }else{
-                    inData += recieved; 
-                  }
-                  
-                }
+            if(Serial.available() > 0 ){
+              char recieved = Serial.read();
+              if (recieved == '\n'){
+                return inData;
+              }else{
+                inData += recieved; 
+              }
             }
         }
         return inData;     
@@ -22,7 +17,7 @@ String getString(){
 String waitForString(){ 
         String inData = "";
         bool quit = false;
-        while(quit !=true){
+        while(quit == false){
            while (Serial.available() > 0){
             char recieved = Serial.read();
                 if (recieved == '\n'){

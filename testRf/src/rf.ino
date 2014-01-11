@@ -125,7 +125,7 @@ void modeSlave(){
 
         delay(100);
     
-        while ( radio.available() ){
+        while ( radio.available()>0 ){
             char d;
             bool done = false;
             while (!done){
@@ -142,23 +142,13 @@ void modeSlave(){
     }
 }
 
-
-int sendRadioInt (){
-        int x;
-              //need to be done
-
-        return x;
-}
-
-String getString(){
+String getString(){ 
         String inData = "";
         bool quit = false;
-        while(quit !=true){
+        while(quit == false){
            while (Serial.available() > 0){
             char recieved = Serial.read();
-                if (recieved == '\r'){
-                    Serial.print("Arduino Received: ");
-                    Serial.println(inData);
+                if (recieved == '\n'){
                     quit = true;
                 }else{
                   inData += recieved; 
