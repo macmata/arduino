@@ -31,12 +31,12 @@ void setup(){
  
 void loop(){ 
   
-    String string = getString();
+    String string = getStringBuffer();
     int button1 = digitalRead(pushButton);
 
   if (string.length() > 0){
-    //Serial.print("string : ");
-    //Serial.println(string);
+    Serial.print("string : ");
+    Serial.println(string);
     wireValue = atoi(string.c_str());
   }
 
@@ -53,27 +53,22 @@ void loop(){
 }
 
 
-String getString(){ 
+String getStringBuffer(){ 
     String inData = "";
-    bool quit = false;
-     if (Serial.available() > 0 ){
-       while(quit == false){
-
-            if(Serial.available() > 0 ){
-              
-              char recieved = Serial.read();
-              if (recieved == '\n'){
-                return inData;
-              }else{
-                inData += recieved; 
-              }
+     char recieved = 1;
+     if(Serial.available()){
+         while(true){
+            if(Serial.available()){
+                recieved = Serial.read();
+                if (recieved == '\n'){
+                    return inData;
+                }else{
+                  inData += recieved; 
+                }
             }
-        }
-    }
-    return inData;     
+        }     
+    }  
 }
-
-
 
 void applyButton1Action (int wireValue){
 
