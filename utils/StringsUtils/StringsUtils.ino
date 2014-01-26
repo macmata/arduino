@@ -1,6 +1,6 @@
 String getStringBuffer(){ 
     String inData = "";
-     char recieved = 1;
+    char recieved = 1;
      if(Serial.available()){
          while(true){
             if(Serial.available()){
