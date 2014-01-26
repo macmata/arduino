@@ -1,36 +1,63 @@
-/*
- Copyright (C) 2013 Alexandre Leblanc info@alexandre-leblanc.com
-
-This arduino application was inspired from the work of J. Coliz <maniacbug@ymail.com>. 
-You can find is work in gitub.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- version 2 as published by the Free Software Foundation.
- */
-
 #include <SPI.h>
 #include "nRF24L01.h"
 #include "RF24.h"
 #include "printf.h"
-
-RF24 radio(9,10);
+#include <TFT.h>  // Arduino LCD library
+/*
+GND	 G
+3V3	 3V3	 
+CE	 6	 chip enable 
+CSN	 7	 chip select
+SCK	 13	 
+MOSI 11  (SDA)
+MISO 12	
+*/
+RF24 radio(6,7);
 
 const uint64_t pipes[2] = { 0xF0F0F0F0E1LL, 0xF0F0F0F0D2LL };
 
 typedef enum { role_ping_out = 1, role_pong_back } role_e;
 
-role_e role;
-
-void setup(void){
+role_e role = role_pong_back;
 
 
-  Serial.begin(57600);
-  printf_begin();
-  radio.begin();
-  radio.setRetries(15,15);
-  radio.setPayloadSize(8);
-  radio.printDetails();
+/*
+// pin definition for the Uno
+#define cs   2
+#define dc   9   (A0) 
+#define rst  8  
+*/
+
+
+
+// create an instance of the library
+TFT TFTscreen = TFT(4, 9, 8);
+
+void setup (void) {
+
+	 Serial.begin(57600);
+  	printf_begin();
+  	radio.begin();
+  	radio.setRetries(15,15);
+  	radio.setPayloadSize(8);
+  	radio.printDetails();
+    TFTscreen.begin();
+
+    // clear the screen with a black background
+    TFTscreen.background(0, 0, 0);
+  
+    // write the static text to the screen
+    // set the font color to white
+    TFTscreen.stroke(255,255,255);
+    // set the font size
+    TFTscreen.setTextSize(2);
+    // write the text to the top left corner of the screen
+    TFTscreen.text("Initialisation faite :\n ",0,0);
+
+    TFTscreen.stroke(0,0,0);
+    TFTscreen.text("Initialisation faite :\n ",0,0);
+    
+    
 }
 
 void loop(void){
@@ -47,22 +74,37 @@ void loop(void){
       }
 
       if(role == role_ping_out  ){
-        printf("modeMaster\n");
+        
+        TFTscreen.stroke(255,255,255);
+        TFTscreen.setTextSize(2);
+        TFTscreen.text("Mode master :\n ",0,0);
+        delay(10);
+        TFTscreen.stroke(0,0,0);
+        TFTscreen.text("Mode master :\n ",0,0);
+        radio.printDetails();
         modeMaster();
       }
       else if(role == role_pong_back) {
-        printf("modeSlave\n");
+
+        TFTscreen.stroke(255,255,255);
+        TFTscreen.setTextSize(2);
+        TFTscreen.text("Mode slave :\n ",0,0);
+        delay(10);
+        TFTscreen.stroke(0,0,0);
+        TFTscreen.text("Mode slave :\n ",0,0);
+        radio.printDetails();
         modeSlave();
       }
     
       opt ="";
+      Serial.println("SVP faite un choix d'action");
     }while(quit!=true);
 }
 
 void changeMode(void){
     String mode = "";
     printf("Selection du mode\n");
-    printf("Choisir le mode de transmision T ou R ");
+    printf("Choisir le mode de transmision T ou R \n");
       
 
             mode = getString(); 
@@ -81,6 +123,7 @@ void changeMode(void){
             }
 }
 
+
 void modeMaster(){
            
             Serial.println("Entre un msg a envoyer");
@@ -90,16 +133,17 @@ void modeMaster(){
 
 bool sendRadioString(String string){
     radio.stopListening();  
+    
     bool status;
 
             for (int i = 0; i<string.length(); i++){
-
+                
                 char s = string.charAt(i);
                 Serial.print("caractere:");
                 Serial.print(s);
-
+                disableDevice2();
                 status = radio.write( &s, sizeof(char));
-                
+                Serial.println(status);
                 if (status){
                     printf(" ok...\n");
                 }else{
@@ -117,18 +161,22 @@ bool sendRadioString(String string){
             }
     
 }
+
 void modeSlave(){
+    
     bool quit = false;
     String string = "";
+     
     radio.startListening();
     while (quit != true){
 
         delay(100);
-    
+               
         while ( radio.available()>0 ){
             char d;
             bool done = false;
             while (!done){
+               disableDevice2();
               done = radio.read( &d, sizeof(char) );
 
                 if (d=='\n'){
@@ -157,4 +205,10 @@ String getString(){
         }
         return inData;     
 }
-//test
+void disableDevice2(void){
+                pinMode(4,OUTPUT);
+                digitalWrite(4,HIGH);
+                pinMode(6,INPUT);
+                digitalWrite(6,LOW);
+
+}
